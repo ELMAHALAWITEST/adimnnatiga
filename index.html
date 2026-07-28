@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>يلا بينا عالنتيجة | المحلاوي</title>
+    
+    <!-- STREAMING_CHUNK:Loading Tailwind & Cool Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;800&family=Lalezar&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Changa', sans-serif; 
+            background: #09090b; 
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .font-lalezar {
+            font-family: 'Lalezar', cursive; 
+            letter-spacing: 1px;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .glow-text { text-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.4); }
+        .glow-text-alt { text-shadow: 0 0 15px rgba(14, 165, 233, 0.8); }
+
+        .floating { animation: float 4s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .result-card {
+            transform: scale(0.95) translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .result-card.show {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .radio-label {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .radio-input:checked + .radio-label {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.5);
+            transform: scale(1.02);
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .loader {
+            border: 4px solid rgba(255,255,255,0.05);
+            border-left-color: #8b5cf6;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 0.8s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col justify-between items-center relative selection:bg-purple-500 selection:text-white">
+
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+
+    <main class="flex-grow flex flex-col items-center justify-center w-full px-4 sm:px-6 pt-12 pb-20 z-10 relative">
+        
+        <div class="text-center mb-8 sm:mb-12 floating w-full">
+            <h1 class="font-lalezar text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent bg-clip-text bg-gradient-to-br from-violet-400 via-fuchsia-500 to-indigo-500 glow-text mb-2 sm:mb-4 leading-tight">
+                يلا بينا
+            </h1>
+            <h2 class="font-lalezar text-4xl sm:text-5xl md:text-6xl text-white tracking-wide glow-text-alt">
+                عـالنتيـجــة 🚀
+            </h2>
+            <p class="mt-4 sm:mt-6 text-slate-300 text-base sm:text-lg max-w-md mx-auto font-semibold px-2">
+                أسرع وأقوى منصة لمعرفة نتيجتك. مستني إيه؟
+            </p>
+        </div>
+
+        <div class="glass-panel w-full max-w-xl rounded-[2rem] p-5 sm:p-8 md:p-10 shadow-2xl">
+            
+            <!-- 3 Options Now -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                <label class="relative">
+                    <input type="radio" name="searchType" value="seating_no" class="radio-input hidden" checked>
+                    <div class="radio-label border-2 border-slate-700/50 rounded-2xl py-3 px-1 sm:px-4 text-center font-bold text-slate-300 hover:bg-slate-800 text-xs sm:text-base transition-transform active:scale-95 h-full flex flex-col justify-center items-center">
+                        <span class="mb-1 text-lg">🔢</span> جلوس
+                    </div>
+                </label>
+                <label class="relative">
+                    <input type="radio" name="searchType" value="arabic_name" class="radio-input hidden">
+                    <div class="radio-label border-2 border-slate-700/50 rounded-2xl py-3 px-1 sm:px-4 text-center font-bold text-slate-300 hover:bg-slate-800 text-xs sm:text-base transition-transform active:scale-95 h-full flex flex-col justify-center items-center">
+                        <span class="mb-1 text-lg">👤</span> اسم
+                    </div>
+                </label>
+                <label class="relative">
+                    <input type="radio" name="searchType" value="advanced" class="radio-input hidden">
+                    <div class="radio-label border-2 border-slate-700/50 rounded-2xl py-3 px-1 sm:px-4 text-center font-bold text-slate-300 hover:bg-slate-800 text-xs sm:text-base transition-transform active:scale-95 h-full flex flex-col justify-center items-center">
+                        <span class="mb-1 text-lg">✨</span> بحث ذكي
+                    </div>
+                </label>
+            </div>
+
+            <form id="search-form" class="flex flex-col gap-4 relative">
+                
+                <!-- Normal Search Box -->
+                <div id="normal-search-box" class="relative w-full">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="أدخل رقم الجلوس هنا..." 
+                        class="w-full bg-black/40 border-2 border-slate-700/50 focus:border-violet-500 rounded-2xl py-4 sm:py-5 px-5 sm:px-6 text-lg sm:text-xl text-center sm:text-right text-white outline-none transition-all duration-300 focus:shadow-[0_0_25px_rgba(139,92,246,0.2)] placeholder-slate-500 font-bold"
+                        required
+                    >
+                </div>
+
+                <!-- Advanced Search Box (Hidden by default) -->
+                <div id="advanced-search-box" class="hidden flex flex-col gap-3 w-full">
+                    <input 
+                        type="text" 
+                        id="adv-input-1" 
+                        placeholder="الاسم الأول (مثال: أسامة)" 
+                        class="w-full bg-black/40 border-2 border-slate-700/50 focus:border-violet-500 rounded-2xl py-3 px-5 text-lg text-center sm:text-right text-white outline-none transition-all duration-300 focus:shadow-[0_0_20px_rgba(139,92,246,0.2)] placeholder-slate-500 font-bold"
+                    >
+                    <input 
+                        type="text" 
+                        id="adv-input-2" 
+                        placeholder="الاسم الأخير أو العائلة (مثال: المحلاوي)" 
+                        class="w-full bg-black/40 border-2 border-slate-700/50 focus:border-violet-500 rounded-2xl py-3 px-5 text-lg text-center sm:text-right text-white outline-none transition-all duration-300 focus:shadow-[0_0_20px_rgba(139,92,246,0.2)] placeholder-slate-500 font-bold"
+                    >
+                </div>
+                
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black text-xl sm:text-2xl py-4 sm:py-5 rounded-2xl transition-all duration-300 transform active:scale-95 hover:-translate-y-1 shadow-[0_10px_20px_rgba(139,92,246,0.3)] flex justify-center items-center gap-2"
+                >
+                    ابحث دلوقتي <span id="search-icon" class="text-2xl">🔥</span>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center h-10">
+                <div id="loader" class="loader"></div>
+                <p id="error-msg" class="text-rose-400 font-bold hidden text-sm sm:text-base bg-rose-500/10 py-2 px-4 rounded-xl">
+                    ⚠️ لم نجد هذا الطالب، راجع البيانات وجرب تاني!
+                </p>
+            </div>
+        </div>
+
+        <!-- STREAMING_CHUNK: Single Result Container -->
+        <div id="result-container" class="w-full max-w-xl mt-4 sm:mt-8 hidden">
+            <div id="result-card-box" class="result-card glass-panel rounded-[2rem] p-6 sm:p-8 border-t-4 border-t-emerald-400 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-sky-500/20 rounded-full blur-3xl"></div>
+                
+                <h3 id="result-title" class="font-lalezar text-3xl sm:text-4xl text-emerald-400 mb-6 border-b border-slate-700/50 pb-4">
+                    🎉 ألف مبروك النجاح 🎉
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 text-center sm:text-right relative z-10">
+                    <div class="col-span-2 sm:col-span-1 bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <p class="text-slate-400 text-xs sm:text-sm mb-1 font-bold">اسم الطالب</p>
+                        <p id="res-name" class="text-lg sm:text-xl font-black text-white">---</p>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1 bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <p class="text-slate-400 text-xs sm:text-sm mb-1 font-bold">رقم الجلوس</p>
+                        <p id="res-seat" class="text-lg sm:text-xl font-black text-white">---</p>
+                    </div>
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <p class="text-slate-400 text-xs sm:text-sm mb-1 font-bold">المجموع</p>
+                        <p id="res-score" class="text-xl sm:text-2xl font-black text-amber-400">---</p>
+                    </div>
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
+                        <p class="text-slate-400 text-xs sm:text-sm mb-1 font-bold">النسبة</p>
+                        <p id="res-percentage" class="text-2xl sm:text-3xl font-black text-emerald-400">---</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STREAMING_CHUNK: Multiple Results Container -->
+        <div id="multi-results-container" class="w-full max-w-2xl mt-4 sm:mt-8 hidden animate-[fadeIn_0.5s_ease-out]">
+            <div class="glass-panel rounded-[2rem] p-5 sm:p-8 relative overflow-hidden shadow-2xl border-t-4 border-t-sky-500">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl"></div>
+                
+                <h3 class="font-lalezar text-2xl sm:text-3xl text-sky-400 mb-2 text-center">
+                    بحث متعدد: وجدنا <span id="results-count" class="text-white"></span> طلاب 🔍
+                </h3>
+                <p class="text-slate-400 text-center mb-4 text-sm sm:text-base font-bold">
+                    ابحث عن اسمك في القائمة، أو جرب البحث برقم الجلوس لنتيجة دقيقة.
+                </p>
+                <p id="limit-warning" class="text-amber-400 text-center text-xs mb-4 hidden bg-amber-500/10 py-2 rounded-xl border border-amber-500/30">
+                    * تم عرض أول 50 نتيجة فقط لتسريع العرض. يرجى كتابة الاسم بشكل أدق.
+                </p>
+                
+                <div id="multi-results-list" class="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                    <!-- سيتم إضافة كروت الطلاب المتطابقين هنا برمجياً -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-5 text-center z-10 relative mt-auto glass-panel border-t-0 border-b-0 border-x-0 rounded-t-[2rem]">
+        <p class="text-slate-400 font-bold text-sm sm:text-base">
+            تم التصميم بواسطة <span class="font-lalezar text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-500 text-lg sm:text-xl tracking-wider mx-1">المحلاوي</span> &copy; 2026
+        </p>
+    </footer>
+
+    <!-- STREAMING_CHUNK:JavaScript Config & Logic -->
+    <script>
+        // =========================================================
+        const SUPABASE_URL = 'https://okpqlfiimgqrapgqikid.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcHFsZmlpbWdxcmFwZ3Fpa2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNjkxMzUsImV4cCI6MjEwMDg0NTEzNX0.B2j3hvbMywIqMuKV4eCWQrcog7i_A46XdC1aQiN6CRg';
+        // =========================================================
+
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const isMobile = window.innerWidth < 768;
+        const particleCount = isMobile ? 40 : 100;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                const colors = ['139, 92, 246', '56, 189, 248', '236, 72, 153'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                this.color = `rgba(${randomColor}, ${Math.random() * 0.4 + 0.1})`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        const confCanvas = document.getElementById('confetti-canvas');
+        const confCtx = confCanvas.getContext('2d');
+        let confettis = [];
+        let confettiActive = false;
+
+        function resizeConf() {
+            confCanvas.width = window.innerWidth;
+            confCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeConf);
+        resizeConf();
+
+        const confColors = ['#fce18a', '#ff726d', '#b48def', '#38bdf8', '#34d399', '#fbbf24'];
+
+        class Confetti {
+            constructor() {
+                this.x = Math.random() * confCanvas.width;
+                this.y = Math.random() * confCanvas.height - confCanvas.height;
+                this.size = Math.random() * (isMobile ? 8 : 12) + 4;
+                this.speedY = Math.random() * (isMobile ? 3 : 5) + 2;
+                this.speedX = Math.random() * 4 - 2;
+                this.color = confColors[Math.floor(Math.random() * confColors.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 10 - 5;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+            }
+            draw() {
+                confCtx.save();
+                confCtx.translate(this.x, this.y);
+                confCtx.rotate((this.rotation * Math.PI) / 180);
+                confCtx.fillStyle = this.color;
+                confCtx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                confCtx.restore();
+            }
+        }
+
+        function fireConfetti() {
+            confettis = [];
+            const amount = isMobile ? 80 : 150;
+            for (let i = 0; i < amount; i++) confettis.push(new Confetti());
+            confettiActive = true;
+            animateConfetti();
+            setTimeout(() => { confettiActive = false; }, 3000);
+        }
+
+        function animateConfetti() {
+            confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+            let activeParticles = false;
+            confettis.forEach(c => {
+                c.update();
+                c.draw();
+                if (c.y < confCanvas.height) activeParticles = true;
+            });
+            if (activeParticles || confettiActive) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+            }
+        }
+
+        // --- Search Logic ---
+        const searchForm = document.getElementById('search-form');
+        const radioInputs = document.querySelectorAll('.radio-input');
+        
+        // Input Elements
+        const normalSearchBox = document.getElementById('normal-search-box');
+        const advancedSearchBox = document.getElementById('advanced-search-box');
+        const searchInput = document.getElementById('search-input');
+        const advInput1 = document.getElementById('adv-input-1');
+        const advInput2 = document.getElementById('adv-input-2');
+        
+        // Result Elements
+        const resultContainer = document.getElementById('result-container');
+        const resultCard = document.querySelector('.result-card');
+        const multiContainer = document.getElementById('multi-results-container');
+        const multiList = document.getElementById('multi-results-list');
+        const resultsCount = document.getElementById('results-count');
+        const limitWarning = document.getElementById('limit-warning');
+        
+        const errorMsg = document.getElementById('error-msg');
+        const loader = document.getElementById('loader');
+
+        // Toggle Inputs based on Radio choice
+        radioInputs.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const choice = e.target.value;
+                
+                if(choice === 'advanced') {
+                    // إظهار البحث الذكي
+                    normalSearchBox.classList.add('hidden');
+                    searchInput.removeAttribute('required');
+                    
+                    advancedSearchBox.classList.remove('hidden');
+                    advancedSearchBox.classList.add('flex');
+                    advInput1.setAttribute('required', 'true');
+                    advInput2.setAttribute('required', 'true');
+                    advInput1.focus();
+                } else {
+                    // إظهار البحث العادي
+                    advancedSearchBox.classList.add('hidden');
+                    advancedSearchBox.classList.remove('flex');
+                    advInput1.removeAttribute('required');
+                    advInput2.removeAttribute('required');
+                    
+                    normalSearchBox.classList.remove('hidden');
+                    searchInput.setAttribute('required', 'true');
+                    
+                    if(choice === 'seating_no') {
+                        searchInput.placeholder = "أدخل رقم الجلوس هنا...";
+                        searchInput.type = "number";
+                        searchInput.setAttribute('inputmode', 'numeric');
+                    } else {
+                        searchInput.placeholder = "أدخل اسم الطالب كاملاً هنا...";
+                        searchInput.type = "text";
+                        searchInput.removeAttribute('inputmode');
+                    }
+                    searchInput.focus();
+                }
+            });
+        });
+        searchInput.setAttribute('inputmode', 'numeric');
+
+        // Submit Logic
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const searchType = document.querySelector('.radio-input:checked').value;
+            let filterString = '';
+            let fetchLimit = 1;
+
+            if (searchType === 'seating_no') {
+                const query = searchInput.value.trim();
+                if(!query) return;
+                filterString = `seating_no=eq.${query}`;
+                fetchLimit = 1;
+                searchInput.blur();
+            } 
+            else if (searchType === 'arabic_name') {
+                const query = searchInput.value.trim();
+                if(!query) return;
+                filterString = `arabic_name=ilike.*${query}*`;
+                fetchLimit = 50; // إرجاع الليمت 50
+                searchInput.blur();
+            } 
+            else if (searchType === 'advanced') {
+                const q1 = advInput1.value.trim();
+                const q2 = advInput2.value.trim();
+                if(!q1 || !q2) return;
+                
+                // تركاية البحث الذكي: يجلب الاسم الذي يحتوي على الكلمة الأولى والكلمة الثانية معاً
+                filterString = `and=(arabic_name.ilike.*${q1}*,arabic_name.ilike.*${q2}*)`;
+                fetchLimit = 50; // إرجاع الليمت 50
+                
+                advInput1.blur();
+                advInput2.blur();
+            }
+            
+            // تهيئة وتفريغ النتائج القديمة
+            errorMsg.classList.add('hidden');
+            limitWarning.classList.add('hidden');
+            resultCard.classList.remove('show');
+            resultContainer.classList.add('hidden');
+            multiContainer.classList.add('hidden');
+            multiList.innerHTML = '';
+            loader.style.display = 'block';
+            document.getElementById('search-icon').style.display = 'none';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/students?${filterString}&limit=${fetchLimit}`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                loader.style.display = 'none';
+                document.getElementById('search-icon').style.display = 'inline';
+
+                if(data && data.length > 0) {
+                    
+                    if(data.length === 1 || searchType === 'seating_no') {
+                        // ==========================================
+                        // عرض نتيجة واحدة
+                        // ==========================================
+                        const student = data[0];
+                        
+                        document.getElementById('res-name').textContent = student.arabic_name || "---";
+                        document.getElementById('res-seat').textContent = student.seating_no || "---";
+                        document.getElementById('res-score').textContent = student.total_degree || "---";
+                        document.getElementById('res-percentage').textContent = student.Column1 || "---";
+                        
+                        const titleEl = document.getElementById('result-title');
+                        const cardEl = document.getElementById('result-card-box');
+                        const percentageEl = document.getElementById('res-percentage');
+                        
+                        let percentageString = student.Column1 || "0";
+                        let numericPercentage = parseFloat(percentageString.replace('%', '').trim());
+
+                        if (numericPercentage < 50) {
+                            titleEl.textContent = "عذراً، لم يحالفك التوفيق (راسب) 😔";
+                            titleEl.className = "font-lalezar text-3xl sm:text-4xl text-rose-500 mb-6 border-b border-slate-700/50 pb-4";
+                            cardEl.className = "result-card glass-panel rounded-[2rem] p-6 sm:p-8 border-t-4 border-t-rose-500 text-center relative overflow-hidden";
+                            percentageEl.className = "text-2xl sm:text-3xl font-black text-rose-500";
+                        } else {
+                            titleEl.textContent = "🎉 ألف مبروك النجاح 🎉";
+                            titleEl.className = "font-lalezar text-3xl sm:text-4xl text-emerald-400 mb-6 border-b border-slate-700/50 pb-4";
+                            cardEl.className = "result-card glass-panel rounded-[2rem] p-6 sm:p-8 border-t-4 border-t-emerald-400 text-center relative overflow-hidden";
+                            percentageEl.className = "text-2xl sm:text-3xl font-black text-emerald-400";
+                        }
+                        
+                        resultContainer.classList.remove('hidden');
+                        
+                        setTimeout(() => {
+                            resultCard.classList.add('show');
+                            if (numericPercentage >= 50) fireConfetti();
+                            setTimeout(() => {
+                                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                        }, 50);
+
+                    } else {
+                        // ==========================================
+                        // عرض القائمة المتعددة (أقصى حد 50)
+                        // ==========================================
+                        resultsCount.textContent = data.length;
+                        
+                        if(data.length === 50) {
+                            limitWarning.classList.remove('hidden');
+                        }
+
+                        let listHTML = '';
+                        data.forEach(student => {
+                            let percentageString = student.Column1 || "0";
+                            let numericPercentage = parseFloat(percentageString.replace('%', '').trim());
+                            let isPass = numericPercentage >= 50;
+                            
+                            let borderColor = isPass ? 'border-emerald-500' : 'border-rose-500';
+                            let textColor = isPass ? 'text-emerald-400' : 'text-rose-400';
+                            let statusText = isPass ? 'ناجح' : 'راسب';
+                            
+                            listHTML += `
+                                <div class="bg-black/40 p-4 sm:p-5 rounded-2xl border-r-4 ${borderColor} hover:bg-black/60 transition-colors border-y border-l border-white/5 relative overflow-hidden">
+                                    <h4 class="font-bold text-lg sm:text-xl text-white mb-3 text-right">${student.arabic_name || '---'}</h4>
+                                    <div class="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm text-center">
+                                        <div class="bg-white/5 py-2 px-1 rounded-xl">
+                                            <span class="block text-slate-400 mb-1 font-bold">جلوس</span>
+                                            <span class="font-black text-white text-base">${student.seating_no || '---'}</span>
+                                        </div>
+                                        <div class="bg-white/5 py-2 px-1 rounded-xl">
+                                            <span class="block text-slate-400 mb-1 font-bold">مجموع</span>
+                                            <span class="font-black text-amber-400 text-base">${student.total_degree || '---'}</span>
+                                        </div>
+                                        <div class="bg-white/5 py-2 px-1 rounded-xl shadow-[inset_0_0_15px_rgba(255,255,255,0.02)]">
+                                            <span class="block text-slate-400 mb-1 font-bold">حالة</span>
+                                            <span class="font-black ${textColor} text-base">${student.Column1 || '---'} (${statusText})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        multiList.innerHTML = listHTML;
+                        multiContainer.classList.remove('hidden');
+                        
+                        setTimeout(() => {
+                            multiContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+
+                } else {
+                    errorMsg.textContent = "⚠️ لم نجد أي طالب، تأكد من البيانات أو جرب البحث برقم الجلوس!";
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                document.getElementById('search-icon').style.display = 'inline';
+                errorMsg.textContent = "حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى.";
+                errorMsg.classList.remove('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
